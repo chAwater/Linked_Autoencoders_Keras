@@ -1,9 +1,26 @@
 # Linked Autoencoders Keras
 
+## Summary
 
+![](./imgs/Linked_Autoencoders.jpg)
 
+## Build Convolutional Neural Networks (CNN)
 
+-- Recognize (Classification) HandSign and HandWrite (MNIST) images
 
+### Tricks - Data Augmentation
+
+## Build Autoencoders
+
+-- Based on pre-trained CNN model for classification
+
+### Tricks - Use pre-trained classification model
+
+## Linked Latent Layer
+
+-- Just a simple Neural Network
+
+## Additional - VAE
 
 ---
 
