@@ -4,17 +4,43 @@
 
 ![](./imgs/Linked_Autoencoders.jpg)
 
-## Build Autoencoders
+## What is Autoencoder (AE)?
 
--- Based on pre-trained CNN model for classification
+[Keras blog](https://blog.keras.io/building-autoencoders-in-keras.html)
+
+## Three Steps
+
+- **Step 1**: Train Autoencoders on two datasets (**Train 1**)
+  - MNIST
+  - HandSign (from [deeplearning.ai](https://www.floydhub.com/deeplearningai/datasets/signs))
+- **Step 2**: Train neural network that link two latent layers (**Train 2**)
+- **Step 3**: **Reconstruct** the model
 
 ### Tricks - Use pre-trained classification model
+
+Both of our datasets are images, usually we use convolutional neural network (**CNN**) to extract the feature in the images. There are many instances/examples that use CNN to perform classification/recognizing for both datasets and can get pretty good result.
+
+So maybe the CNN model, which was trained for classification, already "learned" the latent representation of the data.
+
+If that is true, the our **Step 1** will be separated into two step:
+- Step 1a: Build CNN model for classification
+- Step 1b: Use pre-trained model to build AE (Drop top layer, fix weight)
+
+There is a very good code example that [jointly train autoencoder and classifier](https://github.com/keras-team/keras/issues/10037#issuecomment-387213211). In fact, this code train a classifier and autoencoder simultaneously, but I think "train a classifier - fix weight - train a autoencoder (decoder)" is a different case (Am I right?).
 
 ### Build Convolutional Neural Networks (CNN)
 
 -- Recognize (Classification) HandSign and HandWrite (MNIST) images
 
+
+
+
 ### Tricks - Data Augmentation
+
+### Build Autoencoders from CNN
+
+-- Based on pre-trained CNN model for classification
+
 
 ---
 
@@ -53,12 +79,20 @@ This repository is a branch from a **Private** repository.
 [Retaining History When Moving Files Across Repositories in Git](https://stosb.com/blog/retaining-history-when-moving-files-across-repositories-in-git/)
 
 ```bash
-git clone <repo-A> <tmp> # Clone repo-A and rename
+# Clone repo-A and rename
+git clone <repo-A> <tmp>
+# Goto repo-A
 cd <tmp>
-git remote rm origin # Avoid mess up repo-A
-git filter-branch --subdirectory-filter <folder> -- --all # Keep files (in repo-A/folder) that you want to transfer
+# Avoid mess up repo-A
+git remote rm origin
+# Keep files (in repo-A/folder) that you want to transfer
+git filter-branch --subdirectory-filter <folder> -- --all
 
-cd <repo-B> # Goto repo-B
-git remote add repo-A-branch <tmp> # Add branch
-git pull repo-A-branch master --allow-unrelated-histories # Merge
+# Goto repo-B
+cd <repo-B>
+# Add branch
+git remote add repo-A-branch <tmp>
+# Merge
+git pull repo-A-branch master --allow-unrelated-histories
+# Done
 ```
