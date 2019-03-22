@@ -32,8 +32,48 @@ There is a very good code example that [jointly train autoencoder and classifier
 
 -- Recognize (Classification) HandSign and HandWrite (MNIST) images
 
+#### For MNIST dataset
 
+A piece of cake.
 
+```python
+# pseudo-code
+model = Sequential()
+model.add( Conv2D(32,
+    kernel_size=3,
+    activation='relu',
+    padding='same',
+    input_shape=(28,28,1))
+)
+model.add( MaxPooling2D() )
+model.add( Dropout(0.2) )
+
+model.add( Conv2D(64,
+    kernel_size=3,
+    activation='relu',
+    padding='same')
+)
+model.add( MaxPooling2D() )
+model.add( Dropout(0.2) )
+
+model.add( Flatten() )
+model.add( Dense(32, activation='relu')
+model.add( Dense(10, activation='softmax') )
+
+model.compile(
+    loss='categorical_crossentropy',
+    optimizer='adadelta',
+    metrics=['accuracy']
+)
+
+model.fit( epochs=10 ...)
+model.evaluate(...)
+# Test accuracy: 0.9921
+```
+
+#### For HandSign dataset
+
+The HandSign dataset is
 
 ### Tricks - Data Augmentation
 
