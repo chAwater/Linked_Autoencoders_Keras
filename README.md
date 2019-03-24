@@ -11,7 +11,10 @@
 	- [For HandSign dataset](#for-handsign-dataset)
 		- [Trick - Data Augmentation](#trick-data-augmentation)
 		- [Trick - Stack CNN, LeakyReLU](#trick-stack-cnn-leakyrelu)
-- [Build Autoencoders from CNN](#build-autoencoders-from-cnn)
+- [Build Autoencoders from CNN classifier](#build-autoencoders-from-cnn-classifier)
+	- [For MNIST dataset](#for-mnist-dataset)
+		- [Additional - Denoising AE (dAE)](#additional-denoising-ae-dae)
+	- [For HandSign dataset](#for-handsign-dataset)
 - [Linked Latent Layer](#linked-latent-layer)
 - [Additional - VAE](#additional-vae)
 
@@ -175,12 +178,65 @@ There are two mis-predict example. It is excusable, right? ^_^
 ![](./imgs/Mispredict_HandSign.jpg)
 
 
-## Build Autoencoders from CNN
+## Build Autoencoders from CNN classifier
 
 -- Based on pre-trained CNN model for classification
 
+### For MNIST dataset
 
----
+A piece of cake.
+
+```python
+# Encoder
+mnist_encoder = Model(
+		inputs  = mnist_cnn_model.input,
+		outputs = mnist_cnn_model.get_layer(mnist_cnn_model.layers[-2].name).output,
+		name='MNIST_encoder'
+)
+mnist_encoder.trainable = False
+
+# Decoder
+mnist_z = Input(name='MNIST_Z', shape=(mnist_encoder.output.shape[1].value,))
+x1 = Dense(7*7*64, activation='relu',      name='Latent-dFC')(mnist_z)
+x1 = Reshape((7, 7, 64),                   name='Reshape'   )(x1)
+x1 = Conv2DTranspose( 64, kernel_size=3,
+    activation='relu',     padding='same', name='deConv2D-1')(x1)
+x1 = UpSampling2D(                         name='UpSample-1')(x1)
+x1 = Conv2DTranspose( 32, kernel_size=3,
+    activation='relu',     padding='same', name='deConv2D-2')(x1)
+x1 = UpSampling2D(                         name='UpSample-2')(x1)
+x1 = Conv2DTranspose( 1, kernel_size=3,
+    activation='sigmoid',  padding='same', name='deConv2D-3')(x1)
+mnist_decoded = x1
+
+mnist_decoder = Model(mnist_z, mnist_decoded, name='MNIST_decoder')
+
+# Combine Encoder + Decoder
+mnist_autoencoder = Model(
+    inputs  = mnist_cnn_model.input,
+    outputs = mnist_decoder( mnist_encoder(mnist_cnn_model.input) ),
+    name='MNIST_autoencoder'
+)
+mnist_autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+
+
+mnist_autoencoder.fit(
+    x_train, x_train,
+    epochs=10,
+		...
+)
+```
+
+#### Additional - Denoising AE (dAE)
+
+--- Add noise to the data
+
+### For HandSign dataset
+
+
+
+
+
 
 
 ---
