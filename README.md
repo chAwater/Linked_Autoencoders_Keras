@@ -1,10 +1,27 @@
 # Linked Autoencoders - by Keras
 
+<!-- TOC depthFrom:2 depthTo:4 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [Summary](#summary)
+- [What is Autoencoder (AE)?](#what-is-autoencoder-ae)
+- [Three Steps](#three-steps)
+	- [Trick - Use pre-trained classification model](#trick-use-pre-trained-classification-model)
+- [Build Convolutional Neural Networks (CNN)](#build-convolutional-neural-networks-cnn)
+	- [For MNIST dataset](#for-mnist-dataset)
+	- [For HandSign dataset](#for-handsign-dataset)
+		- [Trick - Data Augmentation](#trick-data-augmentation)
+		- [Trick - Stack CNN, LeakyReLU](#trick-stack-cnn-leakyrelu)
+- [Build Autoencoders from CNN](#build-autoencoders-from-cnn)
+- [Linked Latent Layer](#linked-latent-layer)
+- [Additional - VAE](#additional-vae)
+
+<!-- /TOC -->
+
 ## Summary
 
 ![](./imgs/Linked_Autoencoders.jpg)
 
-
+---
 
 ## What is Autoencoder (AE)?
 
@@ -18,7 +35,7 @@
 - **Step 2**: Train neural network that link two latent layers (**Train 2**)
 - **Step 3**: **Reconstruct** the model
 
-#### Trick - Use pre-trained classification model
+### Trick - Use pre-trained classification model
 
 Both of our datasets are images, usually we use convolutional neural network (**CNN**) to extract the feature in the images. There are many instances/examples that use CNN to perform classification/recognizing for both datasets and can get pretty good result.
 
@@ -28,7 +45,7 @@ If that is true, the our **Step 1** will be separated into two step:
 - Step 1a: Build CNN model for classification
 - Step 1b: Use pre-trained model to build AE (Drop top layer, fix weight)
 
-There is a very good code example that [jointly train autoencoder and classifier](https://github.com/keras-team/keras/issues/10037#issuecomment-387213211). In fact, this code train a classifier and autoencoder simultaneously, but I think "train a classifier - fix weight - train a autoencoder (decoder)" is a different case (Am I right?).
+There is a very good code example that [jointly train autoencoder and classifier](https://github.com/keras-team/keras/issues/10037#issuecomment-387213211). In fact, this code train a classifier and autoencoder simultaneously, but I think "train a classifier - fix weight - train a autoencoder (decoder)" is a different case (Am I right?), so let's start in my way.
 
 ## Build Convolutional Neural Networks (CNN)
 
@@ -68,7 +85,7 @@ model.compile(
 
 model.fit( epochs=10 ...)
 model.evaluate(...)
-# Test accuracy: 0.9921
+# Test accuracy: 0.9913
 
 ```
 
@@ -150,7 +167,7 @@ history = signs_cnn_model.fit_generator(
     epochs=30,
     ...
 )
-# Test accuracy: 0.9583333333333334
+# Test accuracy: 0.9666666666666667
 ```
 
 There are two mis-predict example. It is excusable, right? ^_^
@@ -179,7 +196,7 @@ There are two mis-predict example. It is excusable, right? ^_^
 
 ---
 
-#### PS
+##### PS
 
 This idea was raise up when I was processing single cell DNA sequencing data.
 
@@ -193,7 +210,7 @@ If it works, I will create another repository. Hopefully, we can get a neural ne
 
 ---
 
-#### BTW
+##### BTW
 
 This repository is a branch from a **Private** repository.
 
