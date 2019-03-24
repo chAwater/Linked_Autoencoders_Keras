@@ -50,6 +50,8 @@ If that is true, the our **Step 1** will be separated into two step:
 
 There is a very good code example that [jointly train autoencoder and classifier](https://github.com/keras-team/keras/issues/10037#issuecomment-387213211). In fact, this code train a classifier and autoencoder simultaneously, but I think "train a classifier -> fix weight -> train a autoencoder (decoder)" is a different case (Am I right?), so let's start in my way.
 
+---
+
 ## Build Convolutional Neural Networks (CNN)
 
 -- Recognize (Classification) HandSign and HandWrite (MNIST) images
@@ -178,6 +180,7 @@ There are two mis-predict example. It is excusable, right? ^_^
 
 ![](./imgs/Mispredict_HandSign.jpg)
 
+---
 
 ## Build Autoencoders from CNN classifier
 
@@ -241,6 +244,11 @@ We "manually" add some random/gaussian noise into the data, because these noise 
 This version of AE is call the denoising AE (dAE).
 
 dAE on MNIST:
+```
+Reconstructed = Original  -> dAE
+Denoised      = Corrupted -> dAE
+```
+
 ![](./imgs/dAE_on_MNIST.jpg)
 
 ```python
@@ -261,18 +269,34 @@ mnist_autoencoder.fit(
 )
 ```
 
-A interesting result is that if I used the pre-trained CNN, the dAE result is worse than the "fresh trained (without non-trainable)" dAE. This result indicated that the previous CNN (encoder) is less robust. So maybe every CNN should trained under this "random noise version" of data.
+A interesting result is that if I used the pre-trained CNN, the dAE result is **worse** than the "fresh trained (without non-trainable)" dAE.
+
+This result indicated that the previous CNN (encoder) is less robust. So maybe every CNN should trained under this "random noise version" of data.
 
 dAE on MNIST with non-trainable:
+
 ![](./imgs/dAE_on_MNIST_with_nontrainable.jpg)
 
 ### For HandSign dataset
 
+Tricky part: `ImageDataGenerator`
 
+```python
+# https://github.com/keras-team/keras/issues/3923#issuecomment-251185669
+def fixed_generator(generator):
+    for batch in generator:
+        yield (batch, batch)
 
+history = signs_autoencoder.fit_generator(
+    fixed_generator(
+        train_datagen.flow(X_train_orig, batch_size=32, shuffle=True)
+    ),
+    epochs=150,
+    ...
+)
+```
 
-
-
+![](./imgs/AE_on_HandSign.jpg)
 
 ---
 
