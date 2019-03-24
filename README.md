@@ -13,7 +13,7 @@
 		- [Trick - Stack CNN, LeakyReLU](#trick-stack-cnn-leakyrelu)
 - [Build Autoencoders from CNN classifier](#build-autoencoders-from-cnn-classifier)
 	- [For MNIST dataset](#for-mnist-dataset)
-		- [Additional - Denoising AE (dAE)](#additional-denoising-ae-dae)
+		- [Additional - Denoising AE](#additional-denoising-ae)
 	- [For HandSign dataset](#for-handsign-dataset)
 - [Linked Latent Layer](#linked-latent-layer)
 - [Additional - VAE](#additional-vae)
@@ -48,7 +48,7 @@ If that is true, the our **Step 1** will be separated into two step:
 - Step 1a: Build CNN model for classification
 - Step 1b: Use pre-trained model to build AE (Drop top layer, fix weight)
 
-There is a very good code example that [jointly train autoencoder and classifier](https://github.com/keras-team/keras/issues/10037#issuecomment-387213211). In fact, this code train a classifier and autoencoder simultaneously, but I think "train a classifier - fix weight - train a autoencoder (decoder)" is a different case (Am I right?), so let's start in my way.
+There is a very good code example that [jointly train autoencoder and classifier](https://github.com/keras-team/keras/issues/10037#issuecomment-387213211). In fact, this code train a classifier and autoencoder simultaneously, but I think "train a classifier -> fix weight -> train a autoencoder (decoder)" is a different case (Am I right?), so let's start in my way.
 
 ## Build Convolutional Neural Networks (CNN)
 
@@ -96,15 +96,15 @@ model.evaluate(...)
 
 The HandSign dataset is really small: 1080 for Training, 120 for Testing. And it is also noisy and have more pixel (64 x 64 x 3).
 
-Although there are some examples that have good accuracy ([by Tensorflow](https://github.com/mesolmaz/HandSigns_CNN)), I tried one of them, It can get good result in classification, but not work well in autoencoder.
+Although there are some examples that have good accuracy ([by Tensorflow](https://github.com/mesolmaz/HandSigns_CNN)), I tried one of them, it can get good result in classification, but not work well in autoencoder.
 
 So I build one in my way.
 
 #### Trick - Data Augmentation
 
-Small dataset + Noisy, biggest enemy of machine learning.
+<i>Small dataset + Noisy, biggest enemy of machine learning.</i>
 
-Data Augmentation is a powerful tool that can _create new data from existing one_ through shifting/shearing/rotating/flipping.
+**Data Augmentation** is a powerful tool that can _create new data from existing one_ through shifting/shearing/rotating/flipping.
 
 ![](./imgs/HandSign_data_with_augmentation.jpg)
 
@@ -113,6 +113,7 @@ This trick can "increase the size of data from nowhere" and make your model more
 [Keras blog: building-powerful-image-classification-models-using-very-little-data](https://blog.keras.io/building-powerful-image-classification-models-using-very-little-data.html)
 
 ```python
+# Code
 train_datagen = ImageDataGenerator( rescale=1./255,
     width_shift_range  = 0.1,
     height_shift_range = 0.1,
@@ -189,9 +190,9 @@ A piece of cake.
 ```python
 # Encoder
 mnist_encoder = Model(
-		inputs  = mnist_cnn_model.input,
-		outputs = mnist_cnn_model.get_layer(mnist_cnn_model.layers[-2].name).output,
-		name='MNIST_encoder'
+    inputs  = mnist_cnn_model.input,
+    outputs = mnist_cnn_model.get_layer(mnist_cnn_model.layers[-2].name).output,
+    name    = 'MNIST_encoder'
 )
 mnist_encoder.trainable = False
 
@@ -209,13 +210,17 @@ x1 = Conv2DTranspose( 1, kernel_size=3,
     activation='sigmoid',  padding='same', name='deConv2D-3')(x1)
 mnist_decoded = x1
 
-mnist_decoder = Model(mnist_z, mnist_decoded, name='MNIST_decoder')
+mnist_decoder = Model(
+    inputs  = mnist_z,
+    outputs = mnist_decoded,
+    name    = 'MNIST_decoder'
+)
 
 # Combine Encoder + Decoder
 mnist_autoencoder = Model(
     inputs  = mnist_cnn_model.input,
     outputs = mnist_decoder( mnist_encoder(mnist_cnn_model.input) ),
-    name='MNIST_autoencoder'
+    name    = 'MNIST_autoencoder'
 )
 mnist_autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
 
@@ -223,13 +228,43 @@ mnist_autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
 mnist_autoencoder.fit(
     x_train, x_train,
     epochs=10,
-		...
+    ...
 )
 ```
 
-#### Additional - Denoising AE (dAE)
+#### Additional - Denoising AE
 
---- Add noise to the data
+--- Also a **Trick**, add noise to the data
+
+We "manually" add some random/gaussian noise into the data, because these noise are random, so they will help the model to recognize the "real" patten/distribution/representation of the data, make the model more robust, even in sometimes the noise make our human really hard to recognize the images.
+
+This version of AE is call the denoising AE (dAE).
+
+dAE on MNIST:
+![](./imgs/dAE_on_MNIST.jpg)
+
+```python
+x_train_noisy = x_train + np.random.normal(loc=0.5, scale=0.5, size=x_train.shape)
+x_test_noisy  = x_test  + np.random.normal(loc=0.5, scale=0.5, size=x_test.shape)
+
+x_train_noisy = np.clip(x_train_noisy, 0, 1)
+x_test_noisy  = np.clip(x_test_noisy,  0, 1)
+
+# x =    noisy data
+# y = original data
+# Otherwise the autoencoder can't know how to remove noise
+# https://ramhiser.com/post/2018-05-14-autoencoders-with-keras/
+mnist_autoencoder.fit(
+    x_train_noisy, x_train,
+    epochs=30,
+    ...
+)
+```
+
+A interesting result is that if I used the pre-trained CNN, the dAE result is worse than the "fresh trained (without non-trainable)" dAE. This result indicated that the previous CNN (encoder) is less robust. So maybe every CNN should trained under this "random noise version" of data.
+
+dAE on MNIST with non-trainable:
+![](./imgs/dAE_on_MNIST_with_nontrainable.jpg)
 
 ### For HandSign dataset
 
