@@ -304,6 +304,67 @@ history = signs_autoencoder.fit_generator(
 
 -- Just a simple Neural Network
 
+![](./imgs/Result.jpg)
+
+```python
+# Prepare the data
+link_data_in  = np.array([])
+link_data_out = np.array([])
+
+link_data_in.shape  = (0,128)
+link_data_out.shape = (0,32)
+
+for n in range(0,6):
+    signs_idx = np.where(Y_train_orig == n)[0]
+    mnist_idx = np.where(y_train_orig == n)[0]
+
+    n_signs = int(signs_idx.shape[0])
+    n_times = int(mnist_idx.shape[0]/n_signs)
+    n_total = n_times*n_signs
+
+    data_iter = train_datagen.flow( X_train_orig[signs_idx], batch_size=n_signs, shuffle=False)
+
+    signs_aug = np.array([])
+    signs_aug.shape = (0,64,64,3)
+    for _ in range( n_times ):
+        signs_aug = np.vstack( (signs_aug, data_iter.next()) )
+
+    signs_latent = signs_encoder.predict(signs_aug)
+    mnist_latent = mnist_encoder.predict(x_train[mnist_idx[:n_total]])
+
+    link_data_in  = np.vstack( (link_data_in,  signs_latent) )
+    link_data_out = np.vstack( (link_data_out, mnist_latent) )
+
+# Model
+signs_Latent = Input(
+	name  = 'SIGNS_Latent',
+	shape = (signs_encoder.outputs[0].shape[1].value,)
+)
+x = Dense(256, activation='relu', name='Link-1'   )(signs_Latent)
+x = Dropout(rate=0.3,             name='Dropout-2')(x)
+x = Dense(128, activation='relu', name='Link-3'   )(x)
+x = Dropout(rate=0.2,             name='Dropout-4')(x)
+x = Dense(32,  activation='relu', name='Link-5'   )(x)
+mnist_Latent = x
+
+signs_to_mnist_linker = Model(
+    inputs  = signs_Latent,
+    outputs = mnist_Latent,
+    name    = 'S_to_M_Linker'
+)
+signs_to_mnist_linker.compile(optimizer='adadelta', loss='mse')
+signs_to_mnist_linker.fit( epochs=20 ... )
+
+signs_to_mnist = Model(
+	name    = 'signs_to_mnist',
+    inputs  = signs_encoder.inputs,
+    outputs = mnist_decoder(
+			      signs_to_mnist_linker(
+				      signs_encoder(signs_encoder.inputs)
+				  )
+			  )
+)
+```
 
 ---
 
