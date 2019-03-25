@@ -16,6 +16,7 @@
 		- [Additional - Denoising AE](#additional-denoising-ae)
 	- [For HandSign dataset](#for-handsign-dataset)
 - [Linked Latent Layer](#linked-latent-layer)
+- [Check out the model](#check-out-the-model)
 - [Additional - VAE](#additional-vae)
 
 <!-- /TOC -->
@@ -366,7 +367,17 @@ signs_to_mnist = Model(
 )
 ```
 
----
+## Check out the model
+
+For now, our Linked model looks great in training and testing. So, let's test it on real image!
+
+<div align=center><img width="30%" src="./imgs/my_three.jpg"/></br></br></div>
+
+I took a picture as a input using my **iPhone**. As you can see, I used a **different version of hand sign** for number **3**. The model had **NEVER** seen this hand sign during training and testing. And also, this hand sign has some part that looks like 0, so maybe the model will think this is a ZERO, let's see the result:
+
+<div align=center><img width="80%" src="./imgs/Check.jpg"/></br></br></div>
+
+BOOM! GREAT result! I got a GOOD and ROBUST model! ~_~
 
 ## Additional - VAE
 
