@@ -5,19 +5,19 @@
 - [Summary](#summary)
 - [What is Autoencoder (AE)?](#what-is-autoencoder-ae)
 - [Three Steps](#three-steps)
-	- [Trick - Use pre-trained classification model](#trick-use-pre-trained-classification-model)
+	- [Trick: Use pre-trained classification model](#trick-use-pre-trained-classification-model)
 - [Build Convolutional Neural Networks (CNN)](#build-convolutional-neural-networks-cnn)
 	- [For MNIST dataset](#for-mnist-dataset)
 	- [For HandSign dataset](#for-handsign-dataset)
-		- [Trick - Data Augmentation](#trick-data-augmentation)
-		- [Trick - Stack CNN, LeakyReLU](#trick-stack-cnn-leakyrelu)
+		- [Trick: Data Augmentation](#trick-data-augmentation)
+		- [Trick: Stack CNN, LeakyReLU](#trick-stack-cnn-leakyrelu)
 - [Build Autoencoders from CNN classifier](#build-autoencoders-from-cnn-classifier)
 	- [For MNIST dataset](#for-mnist-dataset)
-		- [Additional - Denoising AE](#additional-denoising-ae)
+		- [Additional: Denoising AE](#additional-denoising-ae)
 	- [For HandSign dataset](#for-handsign-dataset)
 - [Linked Latent Layer](#linked-latent-layer)
 - [Check out the model](#check-out-the-model)
-- [Additional - VAE](#additional-vae)
+- [Additional: VAE](#additional-vae)
 
 <!-- /TOC -->
 
@@ -39,7 +39,7 @@
 - **Step 2**: Train neural network that link two latent layers (**Train 2**)
 - **Step 3**: **Reconstruct** the model
 
-### Trick - Use pre-trained classification model
+### Trick: Use pre-trained classification model
 
 Both of our datasets are images, usually we use convolutional neural network (**CNN**) to extract the feature in the images. There are many instances/examples that use CNN to perform classification/recognizing for both datasets and can get pretty good result.
 
@@ -103,7 +103,7 @@ Although there are some examples that have good accuracy ([by Tensorflow](https:
 
 So I build one in my way.
 
-#### Trick - Data Augmentation
+#### Trick: Data Augmentation
 
 <i>Small dataset + Noisy, biggest enemy of machine learning.</i>
 
@@ -129,7 +129,7 @@ train_datagen = ImageDataGenerator( rescale=1./255,
 )
 ```
 
-#### Trick - Stack CNN, LeakyReLU
+#### Trick: Stack CNN, LeakyReLU
 
 ```python
 signs_inputs = Input(name='SIGNS', shape=(64,64,3,))
@@ -226,8 +226,10 @@ mnist_autoencoder = Model(
     outputs = mnist_decoder( mnist_encoder(mnist_cnn_model.input) ),
     name    = 'MNIST_autoencoder'
 )
+# Using `binary_crossentropy` as loss function
+# https://stats.stackexchange.com/questions/245448/loss-function-for-autoencoders
+# https://stats.stackexchange.com/questions/394582/why-is-binary-cross-entropy-or-log-loss-used-in-autoencoders-for-non-binary-data
 mnist_autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
-
 
 mnist_autoencoder.fit(
     x_train, x_train,
@@ -236,7 +238,7 @@ mnist_autoencoder.fit(
 )
 ```
 
-#### Additional - Denoising AE
+#### Additional: Denoising AE
 
 --- Also a **Trick**, add noise to the data
 
@@ -357,13 +359,13 @@ signs_to_mnist_linker.compile(optimizer='adadelta', loss='mse')
 signs_to_mnist_linker.fit( epochs=20 ... )
 
 signs_to_mnist = Model(
-	name    = 'signs_to_mnist',
+    name    = 'signs_to_mnist',
     inputs  = signs_encoder.inputs,
     outputs = mnist_decoder(
-			      signs_to_mnist_linker(
-				      signs_encoder(signs_encoder.inputs)
-				  )
-			  )
+                  signs_to_mnist_linker(
+                      signs_encoder(signs_encoder.inputs)
+                  )
+              )
 )
 ```
 
@@ -377,9 +379,9 @@ I took a picture as a input using my **iPhone**. As you can see, I used a **diff
 
 <div align=center><img width="80%" src="./imgs/Check.jpg"/></br></br></div>
 
-BOOM! GREAT result! I got a GOOD and ROBUST model! ~_~
+BOOM! GREAT! I got a GOOD and ROBUST model! `~_~`
 
-## Additional - VAE
+## Additional: VAE
 
 ---
 
