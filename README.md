@@ -18,6 +18,7 @@
 - [Linked Latent Layer](#linked-latent-layer)
 - [Check out the model](#check-out-the-model)
 - [Additional: VAE](#additional-vae)
+	- [What is Variational autoencoder?](#what-is-variational-autoencoder)
 
 <!-- /TOC -->
 
@@ -383,7 +384,14 @@ BOOM! GREAT! I got a GOOD and ROBUST model! `~_~`
 
 ## Additional: VAE
 
----
+### What is Variational autoencoder?
+
+> It is an autoencoder that learns a <b>latent variable model</b> for its input data.
+> So instead of letting your neural network learn an arbitrary function, you are learning the parameters of a <b>probability distribution</b> modeling your data.
+> If you <b>sample</b> points from this distribution, you can generate new input data samples: a VAE is a "<b>generative model</b>".
+
+
+
 
 ##### PS
 
