@@ -19,6 +19,8 @@
 - [Check out the model](#check-out-the-model)
 - [Additional: VAE](#additional-vae)
 	- [What is Variational autoencoder?](#what-is-variational-autoencoder)
+		- [VAE Model](#vae-model)
+		- [KL Divergence](#kl-divergence)
 
 <!-- /TOC -->
 
@@ -387,11 +389,71 @@ BOOM! GREAT! I got a GOOD and ROBUST model! `~_~`
 ### What is Variational autoencoder?
 
 > It is an autoencoder that learns a <b>latent variable model</b> for its input data.
+>
 > So instead of letting your neural network learn an arbitrary function, you are learning the parameters of a <b>probability distribution</b> modeling your data.
+>
 > If you <b>sample</b> points from this distribution, you can generate new input data samples: a VAE is a "<b>generative model</b>".
 
+![](https://camo.githubusercontent.com/74620840800d49e0e3f0fb97db950212f61ec596/687474703a2f2f6b766672616e732e636f6d2f636f6e74656e742f696d616765732f323031362f30382f7661652e6a7067)
+
+(From a Github [repo](https://github.com/kvfrans/variational-autoencoder))
+
+#### VAE Model
+```python
+mnist_latent_dim = 32 # latent for MNIST
+vae_latent_dim   = 2
+
+# reparameterization trick
+# instead of sampling from Q(z|X), sample eps = N(0,I)
+# then z = z_mean + sqrt(var)*eps
+def sampling(args):
+    z_mean, z_log_var = args
+    batch = K.shape(z_mean)[0]
+    dim   = K.int_shape(z_mean)[1]
+    # by default, random_normal has mean=0 and std=1.0
+    epsilon = K.random_normal(shape=(batch, dim))
+    return z_mean + K.exp(0.5 * z_log_var) * epsilon
+
+# Encoder
+vae_inputs = mnist_encoder(mnist_encoder.input)
+
+z_mean     = Dense(vae_latent_dim, name='z_mean'   )(vae_inputs)
+z_log_var  = Dense(vae_latent_dim, name='z_log_var')(vae_inputs)
+z          = Lambda(sampling, output_shape=(vae_latent_dim,), name='z')([z_mean, z_log_var])
+
+vae_encoder = Model(mnist_encoder.input, [z_mean, z_log_var, z], name='vae_encoder')
+
+# Decoder
+vae_latent        = Input(shape=(vae_latent_dim,), name='z_sampling')
+vae_latent_output = Dense(mnist_latent_dim, name='latent_sampling', activation='relu')(vae_latent)
+
+vae_decoder = Model(vae_latent, mnist_decoder(vae_latent_output), name='vae_decoder')
 
 
+vae_input  = mnist_encoder.input
+vae_output = vae_decoder( vae_encoder(vae_input)[2] )
+
+vae = Model(
+    inputs  = vae_input,
+    outputs = vae_output,
+    name    = 'MNIST_VAE'
+)
+```
+
+#### KL Divergence
+
+```python
+def vae_loss(x_raw, x_decoded):
+    xen_loss = K.sum( binary_crossentropy(x_raw, x_decoded) )
+    kl_loss  = - 0.5 * K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
+    return xen_loss + kl_loss
+
+vae.compile(optimizer='adam',loss=vae_loss)
+```
+
+
+
+---
 
 ##### PS
 
