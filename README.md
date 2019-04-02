@@ -21,6 +21,8 @@
 	- [What is Variational autoencoder?](#what-is-variational-autoencoder)
 		- [VAE Model](#vae-model)
 		- [KL Divergence](#kl-divergence)
+		- [VAE Latent space](#vae-latent-space)
+		- [Generative model](#generative-model)
 
 <!-- /TOC -->
 
@@ -396,7 +398,9 @@ BOOM! GREAT! I got a GOOD and ROBUST model! `~_~`
 
 ![](https://camo.githubusercontent.com/74620840800d49e0e3f0fb97db950212f61ec596/687474703a2f2f6b766672616e732e636f6d2f636f6e74656e742f696d616765732f323031362f30382f7661652e6a7067)
 
-(From a Github [repo](https://github.com/kvfrans/variational-autoencoder))
+(This image from a Github [repo](https://github.com/kvfrans/variational-autoencoder))
+
+Other Resource: [Tutorial on VAE](https://tiao.io/post/tutorial-on-variational-autoencoders-with-a-concise-keras-implementation/)
 
 #### VAE Model
 ```python
@@ -451,7 +455,9 @@ def vae_loss(x_raw, x_decoded):
 vae.compile(optimizer='adam',loss=vae_loss)
 ```
 
+#### VAE Latent space
 
+#### Generative model
 
 ---
 
